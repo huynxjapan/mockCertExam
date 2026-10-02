@@ -1,0 +1,75 @@
+.min-layout-height {
+    min-height: 500px;
+}
+.bg-header {
+    background-color: #f8fafc;
+}
+.sidebar-bg {
+    background-color: #f1f5f9;
+}
+.panel-reveal-bg {
+    background-color: #fafafa;
+}
+.timer-display {
+    font-size: 1.1rem;
+    color: #e11d48;
+}
+.nav-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 4px;
+    padding: 0;
+}
+.active-nav {
+    border: 3px solid #0284c7 !important;
+    font-weight: bold;
+}
+.answered-nav {
+    background-color: #bae6fd !important;
+    border-color: #38bdf8 !important;
+}
+.marked-nav {
+    background-color: #fef08a !important;
+    border-color: #facc15 !important;
+}
+.option-wrapper {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+}
+
+/* Practice Mode Verdict Styles */
+.correct-option {
+    background-color: #f0fdf4 !important;
+    border-color: #4ade80 !important;
+    border-left: 5px solid #22c55e !important;
+}
+.incorrect-option {
+    background-color: #fef2f2 !important;
+    border-color: #fca5a5 !important;
+    border-left: 5px solid #ef4444 !important;
+}
+
+.badge-large {
+    font-size: 0.95rem !important;
+    padding: 6px 12px !important;
+}
+.question-text-box {
+    background: #fff;
+    border-left: 4px solid #0284c7;
+    padding-left: 15px;
+}
+
+/* Smooth reveal effect */
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-in-out forwards;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(15px); }
+    to { opacity: 1; transform: translateX(0); }
+}

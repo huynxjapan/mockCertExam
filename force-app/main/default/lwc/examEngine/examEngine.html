@@ -1,0 +1,153 @@
+<template>
+    <lightning-card title="Certification Exam Engine" icon-name="custom:custom67">
+        
+        <!-- Loading State -->
+        <template if:true={isLoading}>
+            <lightning-spinner alt-text="Loading..." size="large"></lightning-spinner>
+        </template>
+
+        <!-- Mode Selection State -->
+        <template if:false={isExamStarted}>
+            <div class="slds-p-around_medium slds-align_absolute-center slds-flex-column">
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col">
+                        <h2 class="slds-text-heading_medium slds-m-bottom_medium">Select Exam Mode to Begin:</h2>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-button label="Practice Exam (Show Answers)" variant="brand" data-mode="Practice" onclick={handleStartExam}></lightning-button>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-button label="Real Exam (Timed / Scored)" variant="brand-outline" data-mode="Real" onclick={handleStartExam}></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Core Exam UI -->
+        <template if:true={isExamStarted}>
+            <template if:false={isExamSubmitted}>
+                <!-- Header Panel -->
+                <div class="slds-grid slds-wrap slds-p-around_medium bg-header slds-border_bottom">
+                    <div class="slds-col slds-size_1-of-3">
+                        <p class="slds-text-heading_medium">Question {currentQuestionIndexDisplay} of {totalQuestions}</p>
+                        <p class="slds-text-title slds-text-color_weak">Mode: {selectedMode} Exam</p>
+                    </div>
+                    <div class="slds-col slds-size_2-of-3 slds-text-align_right">
+                        <template if:true={isRealMode}>
+                            <span class="timer-display slds-m-right_medium">Time Remaining: <strong>{formattedTimeLeft}</strong></span>
+                        </template>
+                        <lightning-button label="Submit & Finish Exam" variant="destructive" onclick={handleSubmitExam}></lightning-button>
+                    </div>
+                </div>
+
+                <!-- Main Layout Container -->
+                <div class="slds-grid slds-wrap min-layout-height">
+                    
+                    <!-- Sidebar Navigator -->
+                    <div class="slds-col slds-size_1-of-5 slds-border_right slds-p-around_small sidebar-bg">
+                        <p class="slds-text-title_caps slds-m-bottom_small">Navigator</p>
+                        <div class="slds-grid slds-wrap">
+                            <template for:each={navigationMap} for:item="nav">
+                                <div key={nav.id} class="slds-p-around_xx-small">
+                                    <button class={nav.className} data-index={nav.index} onclick={handleNavigateQuestion}>
+                                        {nav.label}
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Active Question Canvas -->
+                    <div class={questionCanvasClass}>
+                        <div class="slds-m-bottom_medium">
+                            <lightning-input type="checkbox" label="Mark for Review" checked={currentQuestionMarked} onchange={handleMarkReview}></lightning-input>
+                        </div>
+
+                        <div class="slds-text-heading_small slds-m-bottom_large question-text-box">
+                            <lightning-formatted-rich-text value={currentQuestion.questionText}></lightning-formatted-rich-text>
+                        </div>
+
+                        <!-- Options UI -->
+                        <div class="slds-m-bottom_large">
+                            <!-- Single Select -->
+                            <template if:true={isSingleSelect}>
+                                <template for:each={currentQuestion.options} for:item="opt">
+                                    <span key={opt.id} class={opt.wrapperClass}>
+                                        <input type="radio" id={opt.id} value={opt.id} name="radioGroup" checked={opt.isSelected} disabled={isCurrentQuestionRevealed} onclick={handleOptionSelect} />
+                                        <label class="slds-radio__label" for={opt.id}>
+                                            <span class="slds-radio_faux"></span>
+                                            <span class="slds-form-element__label slds-p-left_small">
+                                                <lightning-formatted-rich-text value={opt.optionText}></lightning-formatted-rich-text>
+                                            </span>
+                                        </label>
+                                    </span>
+                                </template>
+                            </template>
+
+                            <!-- Multi Select -->
+                            <template if:false={isSingleSelect}>
+                                <template for:each={currentQuestion.options} for:item="opt">
+                                    <span key={opt.id} class={opt.wrapperClass}>
+                                        <input type="checkbox" id={opt.id} value={opt.id} checked={opt.isSelected} disabled={isCurrentQuestionRevealed} onchange={handleOptionSelect} />
+                                        <label class="slds-checkbox__label" for={opt.id}>
+                                            <span class="slds-checkbox_faux"></span>
+                                            <span class="slds-form-element__label slds-p-left_small">
+                                                <lightning-formatted-rich-text value={opt.optionText}></lightning-formatted-rich-text>
+                                            </span>
+                                        </label>
+                                    </span>
+                                </template>
+                            </template>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="slds-m-top_xx-large slds-border_top slds-p-top_medium slds-grid">
+                            <lightning-button label="Previous" disabled={isFirstQuestion} onclick={handlePrev}></lightning-button>
+                            <div class="slds-col"></div>
+                            
+                            <!-- Practice Mode: Check Answer Button -->
+                            <template if:true={showCheckAnswerButton}>
+                                <lightning-button label="Check Answer" variant="brand" class="slds-m-r_small" disabled={isNextDisabledInPractice} onclick={handleRevealAnswer}></lightning-button>
+                            </template>
+
+                            <lightning-button label="Next" variant={nextButtonVariant} disabled={isNextButtonDisabled} onclick={handleNext}></lightning-button>
+                        </div>
+                    </div>
+
+                    <!-- Practice Mode Panel (Revealed Right Side) -->
+                    <template if:true={showRightPanel}>
+                        <div class="slds-col slds-size_2-of-5 slds-p-around_large slds-border_left panel-reveal-bg animate-fade-in">
+                            <h3 class="slds-text-heading_medium slds-m-bottom_medium">Answer & Explanation</h3>
+                            
+                            <!-- Verdict Badge -->
+                            <div class="slds-m-bottom_medium">
+                                <template if:true={isCurrentAnswerCorrect}>
+                                    <span class="slds-badge slds-theme_success badge-large">✓ Correct</span>
+                                </template>
+                                <template if:false={isCurrentAnswerCorrect}>
+                                    <span class="slds-badge slds-theme_error badge-large">✗ Incorrect</span>
+                                </template>
+                            </div>
+
+                            <!-- Explanation Text -->
+                            <div class="slds-box slds-theme_shade">
+                                <p class="slds-text-title_caps slds-m-bottom_x-small">Explanation:</p>
+                                <lightning-formatted-rich-text value={currentQuestion.explanation}></lightning-formatted-rich-text>
+                            </div>
+                        </div>
+                    </template>
+
+                </div>
+            </template>
+
+            <!-- Submission Confirmation -->
+            <template if:true={isExamSubmitted}>
+                <div class="slds-p-around_xlarge slds-text-align_center">
+                    <lightning-icon icon-name="action:approval" size="large"></lightning-icon>
+                    <h2 class="slds-text-heading_large slds-m-top_medium text-success">Exam Successfully Submitted!</h2>
+                    <p class="slds-text-body_regular slds-m-top_small">Your results have been locked and calculated successfully.</p>
+                </div>
+            </template>
+        </template>
+    </lightning-card>
+</template>

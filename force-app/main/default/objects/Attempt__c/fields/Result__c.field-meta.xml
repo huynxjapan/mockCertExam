@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Result__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(
+    ISBLANK(Score__c), 
+    &quot;Calculating&quot;,
+    IF(Score__c &gt;=  Exam__r.Passing_Score__c , &quot;Passed&quot;, &quot;Failed&quot;)
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Result</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>
