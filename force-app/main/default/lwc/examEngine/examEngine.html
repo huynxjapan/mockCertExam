@@ -58,7 +58,8 @@
                     </div>
 
                     <!-- Active Question Canvas -->
-                    <div class={questionCanvasClass}>
+                    <!--<div class={questionCanvasClass}> -->
+                    <div class="slds-col slds-size_2-of-5 slds-p-around_large">
                         <div class="slds-m-bottom_medium">
                             <lightning-input type="checkbox" label="Mark for Review" checked={currentQuestionMarked} onchange={handleMarkReview}></lightning-input>
                         </div>
@@ -146,6 +147,19 @@
                     <lightning-icon icon-name="action:approval" size="large"></lightning-icon>
                     <h2 class="slds-text-heading_large slds-m-top_medium text-success">Exam Successfully Submitted!</h2>
                     <p class="slds-text-body_regular slds-m-top_small">Your results have been locked and calculated successfully.</p>
+                    <div class="slds-m-top_large">
+                        <p class="slds-text-heading_small">
+                            Final Score: 
+                            <lightning-formatted-number 
+                                value={score} 
+                                format-style="percent"
+                                minimum-fraction-digits="2" 
+                                maximum-fraction-digits="2">
+                            </lightning-formatted-number>
+                        </p>
+                        <p class="slds-text-heading_small">Time Used: <strong>{usedTime}</strong></p>
+                        <p class="slds-text-heading_small">Result: <strong>{finalResult}</strong></p>
+                    </div>
                 </div>
             </template>
         </template>

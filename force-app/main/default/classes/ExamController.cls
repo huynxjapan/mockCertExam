@@ -20,6 +20,12 @@ public with sharing class ExamController {
         @AuraEnabled public Boolean isCorrect { get; set; }
     }
 
+    public class ResultWrapper {
+        @AuraEnabled public Decimal usedTime { get; set; }
+        @AuraEnabled public Decimal score { get; set; }
+        @AuraEnabled public String result { get;set; }
+    }
+
     @AuraEnabled
     public static ExamWrapper startExam(Id examId, String mode) {
         Exam__c exam = [SELECT Id, Duration_Minutes__c, Total_Questions__c FROM Exam__c WHERE Id = :examId LIMIT 1];
@@ -87,10 +93,10 @@ public with sharing class ExamController {
     }
 
     @AuraEnabled
-    public static void submitExam(Id attemptId, String responsesJson) {
+    public static ResultWrapper submitExam(Id attemptId, String responsesJson) {
         // create correct answers
         Map<Id, List<String>> userAnswers = (Map<Id, List<String>>) JSON.deserialize(responsesJson, Map<Id, List<String>>.class);
-        Attempt__c attempt = [SELECT Id, Exam__c FROM Attempt__c WHERE Id = :attemptId LIMIT 1];
+        Attempt__c attempt = [SELECT Id, Exam__c, Exam__r.Total_Questions__c FROM Attempt__c WHERE Id = :attemptId LIMIT 1];
         List<Question_Option__c> allCorrectOptions = [SELECT Id, Exam_Question__c, Is_Correct__c FROM Question_Option__c WHERE Exam_Question__c IN :userAnswers.keySet()];
         Map<Id, Set<Id>> correctMap = new Map<Id, Set<Id>>();
         for(Question_Option__c opt : allCorrectOptions) {
@@ -116,7 +122,15 @@ public with sharing class ExamController {
         insert answersToInsert;
         // calculate and update attempt
         attempt.Status__c = 'Submitted';
-        attempt.Score__c = userAnswers.size() > 0 ? ((Decimal)correctCount / userAnswers.size()) * 100 : 0;
+        attempt.Score__c = attempt.Exam__r.Total_Questions__c > 0 ? ((Decimal)correctCount / attempt.Exam__r.Total_Questions__c) * 100 : 0;
         update attempt;
+
+        // return result to screen
+        Attempt__c updatedAttempt = [SELECT Id, Score__c, Used_Time__c, Result__c FROM Attempt__c WHERE Id = :attemptId LIMIT 1];
+        ResultWrapper result = new ResultWrapper();
+        result.usedTime = updatedAttempt.Used_Time__c;
+        result.score = updatedAttempt.Score__c;
+        result.result = updatedAttempt.Result__c;
+        return result;
     }
 }

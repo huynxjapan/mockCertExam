@@ -16,6 +16,10 @@ export default class ExamEngine extends LightningElement {
     timerInterval;
     attemptId;
     selectedMode = ''; // 'Practice' or 'Real'
+
+    finalResult;
+    score;
+    usedTime;
     
     isLoading = false;
     isExamStarted = false;
@@ -40,11 +44,11 @@ export default class ExamEngine extends LightningElement {
     }
 
     // 中央の問題エリアの横幅比率をモードによって可変にする
-    get questionCanvasClass() {
+    /*get questionCanvasClass() {
         return this.showRightPanel 
             ? 'slds-col slds-size_2-of-5 slds-p-around_large' 
             : 'slds-col slds-size_4-of-5 slds-p-around_large';
-    }
+    }*/
 
     get currentQuestion() {
         if (this.questions.length === 0) return null;
@@ -228,12 +232,12 @@ export default class ExamEngine extends LightningElement {
         clearInterval(this.timerInterval);
         this.isLoading = true;
         
-        submitExam({
-            attemptId: this.attemptId,
-            responsesJson: JSON.stringify(this.responses)
-        })
-        .then(() => {
+        submitExam({ attemptId: this.attemptId, responsesJson: JSON.stringify(this.responses)
+        }).then(result => {
             this.isExamSubmitted = true;
+            this.finalResult = result.result;
+            this.score = result.score/100;
+            this.usedTime = result.usedTime;
             this.showToast('Success', 'Exam session finished and calculated.', 'success');
         })
         .catch(error => {
