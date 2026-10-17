@@ -2,6 +2,7 @@ import { LightningElement, api, track } from 'lwc';
 import startExam from '@salesforce/apex/ExamController.startExam';
 import submitExam from '@salesforce/apex/ExamController.submitExam';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { openTab } from 'lightning/platformWorkspaceApi';
 
 export default class ExamEngine extends LightningElement {
     @api recordId;
@@ -207,6 +208,19 @@ export default class ExamEngine extends LightningElement {
             this.markedForReview.delete(qId);
         }
         this.markedForReview = new Set(this.markedForReview);
+    }
+
+    handleOpenQuestionDetails() {
+        openTab({
+            recordId: this.currentQuestion.questionId,
+            focus: true
+        }).catch(error => {
+            this.showToast(
+                'Unable to Open Question',
+                error.body?.message || error.message,
+                'error'
+            );
+        });
     }
 
     handleNavigateQuestion(event) {

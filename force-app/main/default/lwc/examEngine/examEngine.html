@@ -58,10 +58,16 @@
                     </div>
 
                     <!-- Active Question Canvas -->
-                    <!--<div class={questionCanvasClass}> -->
                     <div class="slds-col slds-size_2-of-5 slds-p-around_large">
-                        <div class="slds-m-bottom_medium">
-                            <lightning-input type="checkbox" label="Mark for Review" checked={currentQuestionMarked} onchange={handleMarkReview}></lightning-input>
+                        <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_medium">
+                            <div class="slds-col">
+                                <lightning-input type="checkbox" label="Mark for Review" checked={currentQuestionMarked} onchange={handleMarkReview}></lightning-input>
+                            </div>
+                            <div class="slds-col_bump-left">
+                                <template if:true={isPracticeMode}>
+                                     <lightning-button variant="base" label="View Question Details" onclick={handleOpenQuestionDetails}></lightning-button>
+                                </template>
+                            </div>
                         </div>
 
                         <div class="slds-text-heading_small slds-m-bottom_large question-text-box">
