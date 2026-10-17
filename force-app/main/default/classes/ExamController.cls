@@ -40,13 +40,24 @@ public with sharing class ExamController {
 
         Integer maxQuestions = exam.Total_Questions__c != null ? exam.Total_Questions__c.intValue() : 50;
         
-        // 2. query exam questions
+        // 2. randomly select exam questions
         List<Exam_Question__c> questions = [
             SELECT Id, Text__c, Type__c, Explanation__c 
             FROM Exam_Question__c 
-            WHERE Exam__c = :examId 
-            LIMIT :maxQuestions
+            WHERE Exam__c = :examId
         ];
+        if(maxQuestions < 0) {
+            maxQuestions = 0;
+        }
+        for(Integer i = 0; i < maxQuestions && i < questions.size(); i++) {
+            Integer randomIndex = i + (Integer)Math.floor(Math.random() * (questions.size() - i));
+            Exam_Question__c question = questions[i];
+            questions[i] = questions[randomIndex];
+            questions[randomIndex] = question;
+        }
+        while(questions.size() > maxQuestions) {
+            questions.remove(questions.size() - 1);
+        }
 
         Set<Id> questionIds = new Set<Id>();
         for(Exam_Question__c q : questions) {
